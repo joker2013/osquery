@@ -15,9 +15,9 @@
 #include <sys/inotify.h>
 #include <sys/stat.h>
 
-#include <osquery/events/events.h>
-
-#include "osquery/events/pathset.h"
+#include <osquery/events/eventpublisher.h>
+#include <osquery/events/pathset.h>
+#include <osquery/events/subscription.h>
 
 namespace osquery {
 
@@ -222,7 +222,7 @@ class INotifyEventPublisher
   bool monitorSubscription(INotifySubscriptionContextRef& sc,
                            bool add_watch = true);
 
-  /// Build the set of excluded paths for which events are not to be propogated.
+  /// Build the set of excluded paths for which events are not to be propagated.
   void buildExcludePathsSet();
 
   /// Remove an INotify watch (monitor) from our tracking.

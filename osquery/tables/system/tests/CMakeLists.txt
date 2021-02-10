@@ -29,10 +29,12 @@ endfunction()
 
 function(generateOsqueryTablesSystemLinuxTests)
   add_osquery_executable(osquery_tables_system_linux_tests-test
+    linux/extended_attributes_tests.cpp
     linux/md_tables_tests.cpp
     linux/pci_devices_tests.cpp
     linux/pcidb_tests.cpp
     linux/portage_tests.cpp
+    linux/rpm_packages_tests.cpp
     linux/selinux_settings_tests.cpp
   )
 
@@ -42,11 +44,13 @@ function(generateOsqueryTablesSystemLinuxTests)
     osquery_core
     osquery_core_sql
     osquery_database
+    osquery_extensions
+    osquery_extensions_implthrift
     osquery_filesystem
-    osquery_remote_tests_remotetestutils
     osquery_tables_system_systemtable
     osquery_utils
     osquery_utils_conversions
+    tests_helper
     thirdparty_googletest
   )
 endfunction()
@@ -63,15 +67,16 @@ function(generateOsqueryTablesSystemPosixTests)
 
   target_link_libraries(osquery_tables_system_posix_tests-test PRIVATE
     osquery_cxx_settings
-    osquery_config_tests_testutils
     osquery_core
     osquery_core_sql
     osquery_database
+    osquery_extensions
+    osquery_extensions_implthrift
     osquery_filesystem
-    osquery_remote_tests_remotetestutils
     osquery_tables_system_systemtable
     osquery_utils
     osquery_utils_conversions
+    tests_helper
     thirdparty_googletest
   )
 endfunction()
@@ -83,15 +88,16 @@ function(generateOsqueryTablesSystemTestsSystemtablestestsTest)
 
   target_link_libraries(osquery_tables_system_tests_systemtablestests-test PRIVATE
     osquery_cxx_settings
-    osquery_config_tests_testutils
     osquery_core
     osquery_core_sql
     osquery_database
+    osquery_extensions
+    osquery_extensions_implthrift
     osquery_filesystem
-    osquery_remote_tests_remotetestutils
     osquery_tables_system_systemtable
     osquery_utils
     osquery_utils_conversions
+    tests_helper
     thirdparty_googletest
   )
 endfunction()
@@ -109,6 +115,7 @@ function(generateOsqueryTablesSystemDarwinTests)
     darwin/processes_tests.cpp
     darwin/smc_tests.cpp
     darwin/startup_items_tests.cpp
+    darwin/system_extensions_test.cpp
     darwin/signature_tests.mm
   )
 
@@ -118,11 +125,13 @@ function(generateOsqueryTablesSystemDarwinTests)
     osquery_core
     osquery_core_sql
     osquery_database
+    osquery_extensions
+    osquery_extensions_implthrift
     osquery_filesystem
-    osquery_remote_tests_remotetestutils
     osquery_tables_system_systemtable
     osquery_utils
     osquery_utils_conversions
+    tests_helper
     thirdparty_googletest
   )
 endfunction()
@@ -137,15 +146,16 @@ function(generateOsqueryTablesSystemWindowsTests)
 
   target_link_libraries(osquery_tables_system_windows_tests-test PRIVATE
     osquery_cxx_settings
-    osquery_config_tests_testutils
     osquery_core
     osquery_core_sql
     osquery_database
+    osquery_extensions
+    osquery_extensions_implthrift
     osquery_filesystem
-    osquery_remote_tests_remotetestutils
     osquery_tables_system_systemtable
     osquery_utils
     osquery_utils_conversions
+    tests_helper
     thirdparty_googletest
   )
 endfunction()
@@ -159,15 +169,11 @@ function(generateOsqueryTablesSystemTestsAugeasTestsTest)
     osquery_cxx_settings
     osquery_config_tests_testutils
     osquery_database
-    osquery_dispatcher
-    osquery_events
     osquery_extensions
     osquery_extensions_implthrift
     osquery_registry
-    osquery_remote_enroll_tlsenroll
     osquery_sql
-    osquery_tables_events_eventstable
-    specs_tables
+    tests_helper
     thirdparty_googletest
   )
 
@@ -179,7 +185,6 @@ function(generateOsqueryTablesSystemTestsAugeasTestsTest)
 
   add_dependencies(osquery_tables_system_tests_augeastests-test osquery_tables_system_tests_augeaslenses)
   add_dependencies(osquery_tables_system_tests_augeaslenses thirdparty_augeas)
-
 endfunction()
 
 osqueryTablesSystemTestsMain()

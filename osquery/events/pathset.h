@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <mutex>
 #include <set>
 #include <string>
 #include <vector>
@@ -19,13 +18,14 @@
 
 #include <osquery/core/core.h>
 #include <osquery/filesystem/filesystem.h>
+#include <osquery/utils/mutex.h>
 
 namespace osquery {
 
 /**
  * @brief multiset based implementation for path search.
  *
- * 'multiset' is used because with patterns we can serach for equivalent keys.
+ * 'multiset' is used because with patterns we can search for equivalent keys.
  * Since  '/This/Path/is' ~= '/This/Path/%' ~= '/This/Path/%%' (equivalent).
  *
  * multiset is protected by lock. It is threadsafe.

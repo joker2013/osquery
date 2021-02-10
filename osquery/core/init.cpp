@@ -27,6 +27,7 @@
 #include <sys/resource.h>
 #endif
 
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
 #include <osquery/config/config.h>
@@ -35,6 +36,7 @@
 #include <osquery/core/shutdown.h>
 #include <osquery/core/watcher.h>
 #include <osquery/dispatcher/dispatcher.h>
+#include <osquery/events/eventfactory.h>
 #include <osquery/events/events.h>
 #include <osquery/extensions/extensions.h>
 #include <osquery/filesystem/filesystem.h>
@@ -607,17 +609,17 @@ void Initializer::start() const {
   }
 
   // Start event threads.
-  osquery::attachEvents();
+  attachEvents();
   EventFactory::delay();
 }
 
 /**
- * This is a small interruptable thread implementation.
+ * This is a small interruptible thread implementation.
  *
  * The goal is to wait until interrupted or an alarm timeout. If the timeout
  * occurs then osquery is stuck shutting down and we force-terminate.
  */
-class AlarmRunnable : public InterruptableRunnable {
+class AlarmRunnable : public InterruptibleRunnable {
  public:
   /// Thread entry point.
   void run() {

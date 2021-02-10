@@ -14,9 +14,9 @@
 #include <vector>
 
 #include <osquery/core/plugins/plugin.h>
+#include <osquery/database/idatabaseinterface.h>
 
 namespace osquery {
-
 class Status;
 /**
  * @brief A list of supported backing storage categories: called domains.
@@ -88,7 +88,7 @@ class DatabasePlugin : public Plugin {
    * Database value access indexing is abstracted into domains and keys.
    * Both are string values but exist separately for simple indexing without
    * API-enforcing tokenization. In some cases we do add a component-specific
-   * tokeninzation to keys.
+   * tokenization to keys.
    *
    * @param domain A string value representing abstract storage indexing.
    * @param key A string value representing the lookup/retrieval key.
@@ -285,4 +285,8 @@ Status ptreeToRapidJSON(const std::string& in, std::string& out);
  * @return Success status of upgrading the database
  */
 Status upgradeDatabase(int to_version = kDbCurrentVersion);
+
+/// Returns a database inteface that routes database requests through the
+/// registry
+IDatabaseInterface& getOsqueryDatabase();
 } // namespace osquery

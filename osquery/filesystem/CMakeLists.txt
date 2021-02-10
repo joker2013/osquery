@@ -21,6 +21,11 @@ function(generateOsqueryFilesystem)
     filesystem.cpp
   )
 
+  set(public_header_files
+    fileops.h
+    filesystem.h
+  )
+
   if(DEFINED PLATFORM_MACOS)
     list(APPEND source_files
       darwin/bsd_file_flags.cpp
@@ -30,6 +35,11 @@ function(generateOsqueryFilesystem)
   if(DEFINED PLATFORM_POSIX)
     list(APPEND source_files
       posix/fileops.cpp
+      posix/xattrs.cpp
+    )
+
+    list(APPEND public_header_files
+      posix/xattrs.h
     )
   endif()
 
@@ -61,11 +71,6 @@ function(generateOsqueryFilesystem)
     thirdparty_boost
     thirdparty_libarchive
     thirdparty_zstd
-  )
-
-  set(public_header_files
-    fileops.h
-    filesystem.h
   )
 
   if(DEFINED PLATFORM_LINUX)
@@ -110,6 +115,12 @@ function(generateOsqueryFilesystemTest)
     tests/filesystem.cpp
   )
 
+  if(DEFINED PLATFORM_POSIX)
+    list(APPEND source_files
+      tests/posix/xattrs.cpp
+    )
+  endif()
+
   if(DEFINED PLATFORM_MACOS)
     list(APPEND source_files
       tests/darwin/plist_tests.cpp
@@ -123,19 +134,13 @@ function(generateOsqueryFilesystemTest)
     osquery_cxx_settings
     osquery_config_tests_testutils
     osquery_core
-    osquery_core_sql
-    osquery_dispatcher
-    osquery_distributed
-    osquery_events
     osquery_extensions
     osquery_extensions_implthrift
     osquery_process
     osquery_registry
-    osquery_remote_enroll_tlsenroll
-    plugins_config_tlsconfig
-    specs_tables
     osquery_filesystem_mockfilestructure
     osquery_filesystem
+    tests_helper
     thirdparty_googletest
   )
 endfunction()

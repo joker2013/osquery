@@ -22,9 +22,11 @@ function(pluginsLoggerMain)
     thirdparty_gflags
   )
 
-  generatePluginsLoggerAwsfirehose()
-  generatePluginsLoggerAwskinesis()
-  generatePluginsLoggerAwslogforwarder()
+  if(OSQUERY_BUILD_AWS)
+    generatePluginsLoggerAwsfirehose()
+    generatePluginsLoggerAwskinesis()
+    generatePluginsLoggerAwslogforwarder()
+  endif()
   generatePluginsLoggerBuffered()
   generatePluginsLoggerFilesystemlogger()
   generatePluginsLoggerKafkaproducer()
@@ -155,6 +157,7 @@ function(generatePluginsLoggerKafkaproducer)
     osquery_cxx_settings
     osquery_config
     osquery_dispatcher
+    osquery_remote_utility
     osquery_utils_config
     plugins_config_parsers
     plugins_logger_commondeps

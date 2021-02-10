@@ -17,7 +17,7 @@ icacls .\Extensions /inheritance:r /t
 icacls .\Extensions /inheritance:d /t
 ```
 
-## Autoloading Extensions
+## Auto-loading Extensions
 
 The following [CLI flags](../installation/cli-flags.md) control extension auto-loading:
 
@@ -69,6 +69,27 @@ $ cat /etc/osquery/osquery.flags
 --config_plugin=custom_plugin
 --logger_plugin=scribe
 ```
+
+## Retrieving Tables and Columns with SQL
+
+Aside from the `.tables` and `.schema` shell builtins, there is an alternative way to retrieve all available tables and columns: using SQL.
+
+To retrieve all tables:
+
+```sqlite
+SELECT * FROM osquery_registry
+    WHERE active = true
+    AND internal = false
+    AND registry = 'table';
+```
+
+To retrieve all columns for a given table:
+
+```sqlite
+PRAGMA TABLE_INFO("table-name");
+```
+
+Note: [`PRAGMA`](https://www.sqlite.org/pragma.html) is unavailable in v4.6.0, but was added back in later versions.
 
 ## Troubleshooting
 

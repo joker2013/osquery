@@ -16,9 +16,12 @@ function(thriftMain)
     "${library_root}/src/thrift/async/TAsyncProtocolProcessor.cpp"
     "${library_root}/src/thrift/async/TConcurrentClientSyncInfo.h"
     "${library_root}/src/thrift/async/TConcurrentClientSyncInfo.cpp"
-    "${library_root}/src/thrift/concurrency/ThreadManager.cpp"
     "${library_root}/src/thrift/concurrency/TimerManager.cpp"
-    "${library_root}/src/thrift/concurrency/Util.cpp"
+    "${library_root}/src/thrift/concurrency/Thread.cpp"
+    "${library_root}/src/thrift/concurrency/ThreadFactory.cpp"
+    "${library_root}/src/thrift/concurrency/ThreadManager.cpp"
+    "${library_root}/src/thrift/concurrency/Monitor.cpp"
+    "${library_root}/src/thrift/concurrency/Mutex.cpp"
     "${library_root}/src/thrift/processor/PeekProcessor.cpp"
     "${library_root}/src/thrift/protocol/TBase64Utils.cpp"
     "${library_root}/src/thrift/protocol/TDebugProtocol.cpp"
@@ -73,27 +76,25 @@ function(thriftMain)
     )
   endif()
 
-  if(DEFINED PLATFORM_POSIX)
-    target_sources(thirdparty_thrift PRIVATE
-      "${library_root}/src/thrift/concurrency/PosixThreadFactory.cpp"
-      "${library_root}/src/thrift/concurrency/Mutex.cpp"
-      "${library_root}/src/thrift/concurrency/Monitor.cpp"
-    )
+  if(PLATFORM_WINDOWS)
+    set(forced_include_file_flag "/FI")
   else()
-    target_sources(thirdparty_thrift PRIVATE
-      "${library_root}/src/thrift/concurrency/StdThreadFactory.cpp"
-      "${library_root}/src/thrift/concurrency/StdMutex.cpp"
-      "${library_root}/src/thrift/concurrency/StdMonitor.cpp"
-    )
+    set(forced_include_file_flag "--include")
   endif()
 
-  target_compile_definitions(thirdparty_thrift PRIVATE
+  # C++17 dropped support for random_shuffle. Add it back with a
+  # custom header
+  target_compile_options(thirdparty_thrift PRIVATE
+    "${forced_include_file_flag}${CMAKE_CURRENT_SOURCE_DIR}/patches/random_shuffle.h"
+  )
+
+  target_compile_definitions(thirdparty_thrift PUBLIC
     THRIFT_STATIC_DEFINE
   )
 
   if(DEFINED PLATFORM_WINDOWS)
     target_compile_definitions(thirdparty_thrift PRIVATE
-      PACKAGE_VERSION="0.11.0"
+      PACKAGE_VERSION="0.13.0"
     )
   endif()
 

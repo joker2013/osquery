@@ -16,12 +16,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/property_tree/json_parser.hpp>
-
-// TODO(5591) Remove this when addressed by Boost's ASIO config.
-// https://www.boost.org/doc/libs/1_67_0/boost/asio/detail/config.hpp
-// Standard library support for std::string_view.
-#define BOOST_ASIO_DISABLE_STD_STRING_VIEW 1
-
 #include <boost/asio.hpp>
 #include <boost/foreach.hpp>
 
@@ -1024,7 +1018,7 @@ QueryData genVolumeLabels(QueryContext& context) {
 /**
  * @brief Image layer extractor for docker_image_layers table
  */
-void getImageLayers(std::string image_id, QueryData& results) {
+void getImageLayers(const std::string& image_id, QueryData& results) {
   pt::ptree tree;
   std::vector<std::string> layers;
 
@@ -1098,6 +1092,84 @@ QueryData genImageLayers(QueryContext& context) {
     }
   } else { // get layers for all images
     getImageLayersAll(results);
+  }
+  return results;
+}
+
+/**
+ * @brief Image history extractor for docker_image_history table
+ */
+void getImageHistory(const std::string& image_id, QueryData& results) {
+  pt::ptree tree;
+  Status s = dockerApi("/images/" + image_id + "/history", tree);
+  if (!s.ok()) {
+    VLOG(1) << "Error getting docker images history: " << s.what();
+    return;
+  }
+
+  for (const auto& entry : tree) {
+    try {
+      const pt::ptree& node = entry.second;
+      std::string tags;
+      for (const auto& tag : node.get_child("Tags")) {
+        if (!tags.empty()) {
+          tags.append(",");
+        }
+        tags.append(tag.second.data());
+      }
+
+      Row r;
+      r["id"] = image_id;
+      r["created"] = BIGINT(node.get<uint64_t>("Created", 0));
+      r["size"] = BIGINT(node.get<uint64_t>("Size", 0));
+      r["created_by"] = node.get<std::string>("CreatedBy", "");
+      r["tags"] = tags;
+      r["comment"] = node.get<std::string>("Comment", "");
+      results.push_back(r);
+    } catch (const pt::ptree_error& e) {
+      VLOG(1) << "Error getting docker image history: " << e.what();
+    }
+  }
+}
+
+/**
+ * @brief Calls history for all images for docker_image_history table
+ */
+void getImageHistoryAll(QueryData& results) {
+  pt::ptree tree;
+  Status s = dockerApi("/images/json", tree);
+  if (!s.ok()) {
+    VLOG(1) << "Error getting docker images: " << s.what();
+    return;
+  }
+  for (const auto& entry : tree) {
+    try {
+      const pt::ptree& node = entry.second;
+      std::string id = node.get<std::string>("Id", "");
+      if (boost::starts_with(id, "sha256:")) {
+        id.erase(0, 7);
+      }
+      getImageHistory(id, results);
+    } catch (const pt::ptree_error& e) {
+      VLOG(1) << "Error getting docker image history: " << e.what();
+    }
+  }
+}
+
+/**
+ * @brief Entry point for docker_image_history table.
+ */
+QueryData genImageHistory(QueryContext& context) {
+  QueryData results;
+  if (context.constraints["id"].exists(EQUALS)) {
+    for (const auto& id : context.constraints["id"].getAll(EQUALS)) {
+      if (!checkConstraintValue(id)) {
+        continue;
+      }
+      getImageHistory(id, results);
+    }
+  } else {
+    getImageHistoryAll(results);
   }
   return results;
 }

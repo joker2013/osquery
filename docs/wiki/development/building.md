@@ -4,11 +4,11 @@ osquery supports many flavors of Linux, macOS, and Windows.
 
 While osquery runs on a large number of operating systems, we only provide build instructions for a select few.
 
-The supported compilers are: the osquery toolchain (LLVM/Clang 9.0.1) on Linux, MSVC v142 on Windows, and AppleClang from Xcode Command Line Tools 10.2.1.
+The supported compilers are: the osquery toolchain (LLVM/Clang 9.0.1) on Linux, MSVC v142 on Windows, and AppleClang from Xcode Command Line Tools 11.7.
 
 ## Prerequisites
 
-Git (>= 2.14.0), CMake (>= 3.14.6), Python 3 are required to build. The rest of the dependencies are downloaded by CMake.
+Git (>= 2.14.0), CMake (>= 3.17.5), Python 3 are required to build. The rest of the dependencies are downloaded by CMake.
 
 The default build type is `RelWithDebInfo` (optimizations active + debug symbols) and can be changed in the CMake configure phase by setting the `CMAKE_BUILD_TYPE` flag to `Release` or `Debug`.
 
@@ -36,8 +36,8 @@ wget https://github.com/osquery/osquery-toolchain/releases/download/1.1.0/osquer
 sudo tar xvf osquery-toolchain-1.1.0-x86_64.tar.xz -C /usr/local
 
 # Download and install a newer CMake
-wget https://github.com/Kitware/CMake/releases/download/v3.14.6/cmake-3.14.6-Linux-x86_64.tar.gz
-sudo tar xvf cmake-3.14.6-Linux-x86_64.tar.gz -C /usr/local --strip 1
+wget https://cmake.org/files/v3.17/cmake-3.17.5-Linux-x86_64.tar.gz
+sudo tar xvf cmake-3.17.5-Linux-x86_64.tar.gz -C /usr/local --strip 1
 # Verify that `/usr/local/bin` is in the `PATH` and comes before `/usr/bin`
 
 # Download source
@@ -69,7 +69,7 @@ pip3 install --user setuptools pexpect==3.3 psutil timeout_decorator six thrift=
 
 ### Step 2: Download and build source on macOS
 
-In the following example, the use of the additional CMake argument `-DCMAKE_OSX_DEPLOYMENT_TARGET=10.11` specifies macOS 10.11 as the minimum compatible macOS version to which you can deploy osquery (this affects the version of the macOS SDK used at build time).
+In the following example, the use of the additional CMake argument `-DCMAKE_OSX_DEPLOYMENT_TARGET=10.12` specifies macOS 10.12 as the minimum compatible macOS version to which you can deploy osquery (this affects the version of the macOS SDK used at build time).
 
 ```bash
 # Download source
@@ -78,7 +78,7 @@ cd osquery
 
 # Configure
 mkdir build; cd build
-cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11 ..
+cmake -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 ..
 
 # Build
 cmake --build . -j $(sysctl -n hw.ncpu)
@@ -94,14 +94,14 @@ The initial directory is assumed to be `C:\`
 
 Note: It may be easier to install these prerequisites using [Chocolatey](https://chocolatey.org/).
 
-- [CMake](https://cmake.org/) (>= 3.14.6): the MSI installer is recommended. During installation, select the option to add it to the system `PATH` for all users. If there is any older version of CMake installed (e.g., using Chocolatey), uninstall that version first!  Do not install CMake using the Visual Studio Installer, because it contains an older version than required.
+- [CMake](https://cmake.org/) (>= 3.17.5): the MSI installer is recommended. During installation, select the option to add it to the system `PATH` for all users. If there is any older version of CMake installed (e.g., using Chocolatey), uninstall that version first!  Do not install CMake using the Visual Studio Installer, because it contains an older version than required.
 - Visual Studio 2019 (2 options)
   1. [Visual Studio 2019 Build Tools Installer](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16) (without Visual Studio): In the installer choose the "C++ build tools" workload, then on the right, under "Optional", select "MSVC v142 - VS 2019 C++", "Windows 10 SDK", and "C++ Clang tools for Windows".
   2. [Visual Studio 2019 Community Installer](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&rel=16): In the installer choose the "Desktop development with C++" workload, then on the right, under "Optional", select "MSVC v142 - VS 2019 C++", "Windows 10 SDK", and "C++ Clang tools for Windows".
 - [Git for Windows](https://github.com/git-for-windows/git/releases/latest): Select "checkout as-is, commit as-is". Later check "Enable symbolic links" support.
 - [Python 3](https://www.python.org/downloads/windows/), specifically the 64-bit version.
 - [Wix Toolset](https://wixtoolset.org/releases/)
-- [Strawberry Perl](http://strawberryperl.com/) for the OpenSSL formula. It is recommended to install it to the default destination path.
+- [Strawberry Perl](https://strawberryperl.com/) for the OpenSSL formula. It is recommended to install it to the default destination path.
 - [7-Zip](https://www.7-zip.org/) if building the Chocolatey package.
 
 ### Optional: Install Python tests prerequisites
@@ -343,7 +343,7 @@ On macOS you can choose between a TGZ or a PKG, which is the default.
 You may override this with the CMake `PACKAGING_SYSTEM` variable as seen in the example below.
 
 ```sh
-cmake -DPACKAGING_SYSTEM=TGZ -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11 ..
+cmake -DPACKAGING_SYSTEM=TGZ -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12 ..
 cmake --build . --target package
 ```
 

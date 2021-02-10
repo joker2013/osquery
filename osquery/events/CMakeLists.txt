@@ -16,10 +16,10 @@ function(osqueryEventsMain)
 endfunction()
 
 function(generateOsqueryEvents)
-
   if(DEFINED PLATFORM_LINUX)
     list(APPEND source_files
       audit_flags.cpp
+      file_events_flags.cpp
       linux/auditdnetlink.cpp
       linux/auditeventpublisher.cpp
       linux/inotify.cpp
@@ -27,9 +27,20 @@ function(generateOsqueryEvents)
       linux/udev.cpp
     )
 
+    if(OSQUERY_BUILD_BPF)
+      list(APPEND source_files
+        linux/bpf/bpfeventpublisher.cpp
+        linux/bpf/filesystem.cpp
+        linux/bpf/processcontextfactory.cpp
+        linux/bpf/setrlimit.cpp
+        linux/bpf/systemstatetracker.cpp
+      )
+    endif()
+
   elseif(DEFINED PLATFORM_MACOS)
     list(APPEND source_files
       audit_flags.cpp
+      file_events_flags.cpp
       darwin/diskarbitration.cpp
       darwin/event_taps.cpp
       darwin/fsevents.cpp
@@ -74,6 +85,13 @@ function(generateOsqueryEvents)
       thirdparty_libudev
       thirdparty_util-linux
     )
+
+    if(OSQUERY_BUILD_BPF)
+      target_link_libraries(osquery_events PUBLIC
+        thirdparty_ebpfpub
+      )
+    endif()
+
   elseif(DEFINED PLATFORM_WINDOWS)
     target_link_libraries(osquery_events PUBLIC
       plugins_config_parsers
@@ -99,6 +117,20 @@ function(generateOsqueryEvents)
       linux/syslog.h
       linux/udev.h
     )
+
+    if(OSQUERY_BUILD_BPF)
+      list(APPEND platform_public_header_files
+        linux/bpf/bpfeventpublisher.h
+        linux/bpf/filesystem.h
+        linux/bpf/ifilesystem.h
+        linux/bpf/iprocesscontextfactory.h
+        linux/bpf/isystemstatetracker.h
+        linux/bpf/processcontextfactory.h
+        linux/bpf/setrlimit.h
+        linux/bpf/systemstatetracker.h
+        linux/bpf/uniquedir.h
+      )
+    endif()
 
   elseif(DEFINED PLATFORM_MACOS)
     set(platform_public_header_files
@@ -127,6 +159,7 @@ function(generateOsqueryEvents)
 
   if(DEFINED PLATFORM_LINUX)
     add_test(NAME osquery_events_tests_syslogtests-test COMMAND osquery_events_tests_syslogtests-test)
+    add_test(NAME osquery_events_tests_bpftests-test COMMAND osquery_events_tests_bpftests-test)
     add_test(NAME osquery_events_tests_audittests-test COMMAND osquery_events_tests_audittests-test)
     add_test(NAME osquery_events_tests_processfileeventstests-test COMMAND osquery_events_tests_processfileeventstests-test)
     add_test(NAME osquery_events_tests_inotifytests-test COMMAND osquery_events_tests_inotifytests-test)
@@ -144,7 +177,16 @@ function(generateOsqueryEvents)
 endfunction()
 
 function(generateOsqueryEventsEventsregistry)
-  add_osquery_library(osquery_events_eventsregistry EXCLUDE_FROM_ALL events.cpp)
+  add_osquery_library(osquery_events_eventsregistry EXCLUDE_FROM_ALL
+    subscription.cpp
+    eventer.cpp
+    eventpublisherplugin.cpp
+    events.cpp
+    eventfactory.cpp
+    eventsubscriberplugin.cpp
+  )
+
+  enableLinkWholeArchive(osquery_events_eventsregistry)
 
   target_link_libraries(osquery_events_eventsregistry PUBLIC
     osquery_cxx_settings
@@ -155,7 +197,16 @@ function(generateOsqueryEventsEventsregistry)
   )
 
   set(public_header_files
+    eventer.h
+    eventfactory.h
+    eventpublisher.h
+    eventpublisherplugin.h
     events.h
+    eventsubscriber.h
+    eventsubscriberplugin.h
+    pathset.h
+    subscription.h
+    types.h
   )
 
   generateIncludeNamespace(osquery_events_eventsregistry "osquery/events" "FILE_ONLY" ${public_header_files})

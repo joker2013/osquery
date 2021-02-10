@@ -13,6 +13,7 @@
 #include <boost/format.hpp>
 #include <boost/io/detail/quoted_manip.hpp>
 
+#include <osquery/carver/carver.h>
 #include <osquery/config/config.h>
 #include <osquery/core/core.h>
 #include <osquery/core/flags.h>
@@ -46,6 +47,11 @@ FLAG(uint64,
 
 FLAG(uint64, schedule_epoch, 0, "Epoch for scheduled queries");
 
+FLAG(bool,
+     schedule_lognames,
+     false,
+     "Log the running scheduled query name at INFO level");
+
 HIDDEN_FLAG(bool,
             schedule_reload_sql,
             false,
@@ -54,6 +60,7 @@ HIDDEN_FLAG(bool,
 /// Used to bypass (optimize-out) the set-differential of query results.
 DECLARE_bool(events_optimize);
 DECLARE_bool(enable_numeric_monitoring);
+DECLARE_bool(verbose);
 
 SQLInternal monitor(const std::string& name, const ScheduledQuery& query) {
   if (FLAGS_enable_numeric_monitoring) {
@@ -99,7 +106,11 @@ SQLInternal monitor(const std::string& name, const ScheduledQuery& query) {
 
 Status launchQuery(const std::string& name, const ScheduledQuery& query) {
   // Execute the scheduled query and create a named query object.
-  VLOG(1) << "Executing scheduled query " << name << ": " << query.query;
+  if (FLAGS_verbose) {
+    VLOG(1) << "Executing scheduled query " << name << ": " << query.query;
+  } else if (FLAGS_schedule_lognames) {
+    LOG(INFO) << "Executing scheduled query " << name;
+  }
   runDecorators(DECORATE_ALWAYS);
 
   auto sql = monitor(name, query);
@@ -193,6 +204,12 @@ void SchedulerRunner::maybeRunDecorators(uint64_t time_step) {
   }
 }
 
+void SchedulerRunner::maybeScheduleCarves(uint64_t time_step) {
+  if ((time_step % 60) == 0) {
+    scheduleCarves();
+  }
+}
+
 void SchedulerRunner::maybeReloadSchedule(uint64_t time_step) {
   if (FLAGS_schedule_reload > 0 && (time_step % FLAGS_schedule_reload) == 0) {
     if (FLAGS_schedule_reload_sql) {
@@ -236,6 +253,7 @@ void SchedulerRunner::start() {
     maybeRunDecorators(i);
     maybeReloadSchedule(i);
     maybeFlushLogs(i);
+    maybeScheduleCarves(i);
 
     auto loop_step_duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(
